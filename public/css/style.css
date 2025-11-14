@@ -99,3 +99,23 @@
     background-color: #fe424d !important;
     border: none !important;
 }
+
+/* Edit Page */
+.edit-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+}
+
+/* Show Page */
+.show-card {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.show-img {
+    height: 30vh;
+}
+
+.btns {
+    display: flex;
+}
