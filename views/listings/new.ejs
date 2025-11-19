@@ -3,7 +3,7 @@
   <div class="col-8 offset-2">
     <br> <br>
     <h3>Create a new Listing</h3>
-    <form method="POST" action="/listings">
+    <form method="POST" action="/listings" novalidate class="needs-validation">
       <div class="mb-3">
         <lable for="title" class="form-label">Title</lable>
         <input
@@ -11,17 +11,21 @@
           name="listing[title]"
           placeholder="Enter a catchy title"
           class="form-control"
+          required
         />
+        <div class="valid-feedback">Title looks good!</div>
       </div>
 
       <div class="mb-3">
-        <lable for="description" class="form-label">Description</lable>
+        <lable for="description" class="form-label" required>Description</lable>
         <textarea
           type="text"
           name="listing[description]"
           placeholder="enter description"
           class="form-control"
+          required
         ></textarea>
+        <div class="invalid-feedback">Please enter a short description</div>
       </div>
 
       <div class="mb-3">
@@ -37,11 +41,13 @@
       <div class="mb-3">
         <lable for="price" class="form-label">Price</lable>
         <input
-          type="number"
+        
           name="listing[price]"
           placeholder="1200"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">Please enter a valid Price</div>
       </div>
       <div class="row">
         <div class="mb-3 col-md-4">
@@ -51,7 +57,9 @@
             name="listing[location]"
             placeholder="Jaipur, Rajasthan"
             class="form-control"
+            required
           />
+          <div class="invalid-feedback">Location should be valid</div>
         </div>
 
         <div class="mb-3 col-md-8">
@@ -61,7 +69,9 @@
             name="listing[country]"
             placeholder="India"
             class="form-control"
+            required
           />
+          <div class="invalid-feedback">Country name should be valid</div>
         </div>
       </div>
 

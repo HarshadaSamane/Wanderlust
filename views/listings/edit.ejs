@@ -2,7 +2,7 @@
 <div class="row mt-3">
   <div class="col-8 offset-2">
     <h3>Edit your Listing</h3>
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
+    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" novalidate class="needs-validation">
       <div class="mb-3">
         <lable for="title" class="form-label">Title</lable>
         <input
@@ -10,12 +10,15 @@
           name="listing[title]"
           value="<%= listing.title %>"
           class="form-control"
+          required
         />
+        <div class="valid-feedback">Title looks good!</div>
       </div>
 
       <div class="mb-3">
         <lable for="description" class="form-label">Description</lable>
-        <textarea type="text" name="listing[description]" class="form-control"><%= listing.description %></textarea>
+        <textarea type="text" name="listing[description]" class="form-control" required><%= listing.description %></textarea>
+        <div class="invalid-feedback">Please enter a short description</div>
       </div>
 
       <div class="mb-3">
@@ -26,6 +29,7 @@
           value="<%= listing.image %>"
           class="form-control"
         />
+        <div class="invalid-feedback">Please enter a valid Image link</div>
       </div>
 
       <div class="mb-3">
@@ -35,7 +39,9 @@
           name="listing[price]"
           value="<%= listing.price %>"
           class="form-control"
+          required
         />
+        <div class="invalid-feedback">Please enter a valid Price</div>
       </div>
 
       <div class="row">
@@ -46,7 +52,9 @@
             name="listing[location]"
             value="<%= listing.location %>"
             class="form-control"
+            required
           />
+          <div class="invalid-feedback">Location should be valid</div>
         </div>
 
         <div class="mb-3 col-md-8">
@@ -56,7 +64,9 @@
             name="listing[country]"
             value="<%= listing.country %>"
             class="form-control"
+            required
           />
+          <div class="invalid-feedback">Country name should be valid</div>
         </div>
       </div>
 
@@ -64,3 +74,4 @@
     </form>
   </div>
 </div>
+
