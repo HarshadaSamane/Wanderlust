@@ -1,44 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
-const ExpressError = require("../utils/ExpressError.js");
-const { listingSchema } = require("../schema.js");
 const Listing = require("../models/listing.js");
-
-const validateListing = (req, res, next) => {
-  // Normalize incoming body so we always validate { listing: { ... } }
-  let payload = req.body || {};
-
-  // If client sent bracketed form fields like listing[title], convert them
-  if (!payload.listing) {
-    const fromBrackets = {};
-    for (const key of Object.keys(payload)) {
-      const m = key.match(/^listing\[(.+)\]$/); // matches listing[title]
-      if (m) fromBrackets[m[1]] = payload[key];
-    }
-    if (Object.keys(fromBrackets).length) {
-      payload = { listing: fromBrackets };
-    }
-  }
-
-  // If client sent a flat JSON body (title, description, ...) convert to wrapper
-  if (!payload.listing && payload.title) {
-    payload = { listing: payload };
-  }
-
-  const { error, value } = listingSchema.validate(payload, {
-    abortEarly: false,
-  });
-  if (error) {
-    // Build a readable message from Joi details (e.g. "listing is required")
-    const msg = error.details.map((d) => d.message).join(", ");
-    return next(new ExpressError(400, msg));
-  }
-
-  // Attach normalized and validated data so downstream uses the safe shape
-  req.normalizedListing = value.listing;
-  next();
-};
+const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 
 //INDEX ROUTE
 router.get(
@@ -50,7 +14,7 @@ router.get(
 );
 
 //NEW ROUTE
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn, (req, res) => {
   res.render("listings/new.ejs");
 });
 
@@ -59,11 +23,14 @@ router.get(
   "/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
-    if(!listing) {
+    const listing = await Listing.findById(id)
+      .populate({ path: "reviews", populate : {path: "author"},})
+      .populate("owner");
+    if (!listing) {
       req.flash("error", "Listing you requested for does not exist!");
       return res.redirect("/listings");
     }
+    console.log(listing);
     res.render("listings/show.ejs", { listing });
   })
 );
@@ -80,9 +47,11 @@ router.get(
 
 router.post(
   "/",
+  isLoggedIn,
   validateListing,
   wrapAsync(async (req, res) => {
     const newListing = new Listing(req.normalizedListing);
+    newListing.owner = req.user._id;
     await newListing.save();
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");
@@ -92,10 +61,12 @@ router.post(
 //EDIT ROUTE
 router.get(
   "/:id/edit",
+  isLoggedIn,
+  isOwner,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
     const listing = await Listing.findById(id);
-    if(!listing) {
+    if (!listing) {
       req.flash("error", "Listing you requested for does not exist!");
       return res.redirect("/listings");
     }
@@ -128,17 +99,16 @@ router.get(
 
 router.put(
   "/:id",
+  isLoggedIn,
+  isOwner,
   validateListing,
   wrapAsync(async (req, res) => {
-    const { id } = req.params;
-    const listing = await Listing.findById(id);
-
+    let { id } = req.params;
     // Keep old image if user leaves field blank
     const updatedData = { ...req.normalizedListing };
     if (!updatedData.image) {
       updatedData.image = listing.image;
     }
-
     await Listing.findByIdAndUpdate(id, updatedData);
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
@@ -148,6 +118,8 @@ router.put(
 //DELETE ROUTE
 router.delete(
   "/:id",
+  isLoggedIn,
+  isOwner,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
