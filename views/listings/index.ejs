@@ -1,49 +1,42 @@
 <% layout("/layouts/boilerplate") %>
 
-<body>
-  <h3>All listings</h3>
+<h3>All listings</h3>
 
-  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-    <% for (let listing of allListings) { %>
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+  <% for (let listing of allListings) { %>
 
-      <% 
-        // IMAGE RESOLUTION (one declaration per listing)
-        const DEFAULT_IMG = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e";
-        let imgSrc = DEFAULT_IMG;
-        const raw = listing.image;
+    <%
+      // Simple image selection: Cloudinary URL or local default
+      const DEFAULT_IMG = "/images/Default.jpg"; // ensure this exists in /public/images
+      let imgSrc = DEFAULT_IMG;
 
-        if (raw) {
-          if (typeof raw === "object" && raw.url) {
-            imgSrc = String(raw.url).trim() || DEFAULT_IMG;
-          } else if (typeof raw === "string") {
-            const s = raw.trim();
-            if (s.length) {
-              if (s.includes("unsplash.com/photos")) {
-                // convert unsplash page URL to images.unsplash.com using last dash segment as id
-                const lastDash = s.split("-").pop().split(/[?#\/]/)[0];
-                imgSrc = `https://images.unsplash.com/photo-${lastDash}?auto=format&fit=crop&w=1200&q=80`;
-              } else {
-                imgSrc = s;
-              }
-            }
-          }
+      if (listing.image) {
+        if (typeof listing.image === "object" && listing.image.url) {
+          imgSrc = listing.image.url;
+        } else if (typeof listing.image === "string" && listing.image.trim().length) {
+          imgSrc = listing.image.trim();
         }
-      %>
+      }
+    %>
 
-      <a href="/listings/<%= listing.id %>" class="listing-link">
-        <div class="card col listing-card">
-          <img src="<%= imgSrc %>" class="card-img-top" style="height: 20rem; object-fit: cover;" alt="listing_image" />
+    <a href="/listings/<%= listing.id %>" class="listing-link">
+      <div class="card col listing-card">
+        <img
+          src="<%= imgSrc %>"
+          class="card-img-top"
+          style="height: 20rem; object-fit: cover;"
+          alt="listing_image"
+        />
 
-          <div class="card-img-overlay"></div>
-          <div class="card-body">
-            <p class="card-text">
-              <b><%= listing.title %></b> <br />
-              &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
-            </p>
-          </div>
+        <div class="card-img-overlay"></div>
+        <div class="card-body">
+          <p class="card-text">
+            <b><%= listing.title %></b> <br />
+            &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+          </p>
         </div>
-      </a>
+      </div>
+    </a>
 
-    <% } %>
-  </div>
-</body>
+  <% } %>
+</div>
